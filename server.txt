@@ -1,0 +1,14 @@
+#!/bin/bash
+yum install -y git
+mkdir -p /git/repos/products/eDocs
+cd /git/repos/products/eDocs
+mkdir login.git
+cd login.git
+git --bare init
+
+#Allow root login by modyfying /etc/ssh/sshd_conf
+#
+#
+#
+service sshd restart
+#git clone root@serverurl:/git/repos/products/eDocs/login.git
