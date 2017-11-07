@@ -22,5 +22,6 @@ $ git config --global user.email testuser@example.com
 #git checkout develop(to checkout develop branch)
 #git merge develop(to merge changes from develop to master)
 #git tag (it will list the tags created)
+#git tag -a v1.4 -m "my version 1.4"
 #git 
 
