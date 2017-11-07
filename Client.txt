@@ -23,5 +23,6 @@ $ git config --global user.email testuser@example.com
 #git merge develop(to merge changes from develop to master)
 #git tag (it will list the tags created)
 #git tag -a v1.4 -m "my version 1.4"
-#git 
+#git log --graph --oneline --decorate (graphical log)
+#git log -3( list top 3 commits)
 
