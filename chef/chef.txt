@@ -3,12 +3,15 @@ Chef is a configuration management technology developed by Opscode to manage inf
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
+C:/Users/krao/.chef
+
 CHEF SERVER[Cloud Service]
 ---------------------
 
 https://manage.chef.io/organizations
 
-
+How to Create Organizations
+Click On Administration tab->Click On "Create" which appears lefthand side under organizatins
 
 
 
@@ -57,8 +60,57 @@ Bootstraping the Linux node
 ---------------------------------- 
 
 Note:Bootstrap should be done from chef workstation i.e from windows 
+Note: ensure you have ACL for each organization over chef server 
+
+C:\chef-repo>knife bootstrap 10.96.85.152  --ssh-user  root --ssh-password  Opentext1!  --node-name  Cent
 
 
 Bootstraping the EC2 Linux node[RHEL Image]
 ---------------------------------------- 
-knife bootstrap 13.127.34.3 --ssh-user ec2-user  --sudo --identity-file C:\Users\krao\Downloads\AL.pem   --node-name RHEL-ec2
+knife bootstrap 13.126.27.150  --ssh-user ec2-user  --sudo --identity-file C:\Users\krao\Downloads\AL.pem   --node-name LINUX
+
+
+Bootstraping the windows EC2- node[Windows Server 2016 DataCenter]
+-------------------------------------- 
+Syntax:   knife bootstrap windows winrm ADDRESS --winrm-user USER --winrm-password 'PASSWORD' --node-name node1-windows
+
+C:\chef-repo>knife bootstrap windows winrm 13.126.5.169  --winrm-user Administrator --winrm-password '5U9z.=NuUp'  --node-name node1-windows
+
+Note:  1) By Default any windows machines does not allow to connect, so just login to the windows machine  which you want make as chef node and run below command through power shell
+PS C:\Users\Administrators> netsh advfirewall firewall add rule name="WinRM-HTTP" dir=in localport=5985 protocol=TCP action=allow
+2) And also add  5985 port no  in security groups from AWS management console 
+3)Bootstraping installs chef client on the windows machine, Now add chef executable directory (C:\opscode\chef\bin)  to the class path of windows chef node
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Add 
+
+
+syntx:             knife   node    run_list  add   name of node  cookbook name 
+                   
+                       knife   node    run_list  add   chefnode     heartbeat
+
+Remove
+
+C:\chef-repo> knife node run_list remove  chefnode  'recipe[maven]'
+
+
+
+To upload cookbook to server
+
+C:\chef-repo>knife cookbook upload ohai
+
+C:\chef-repo> knife upload cookbooks
+
+
+To delete a cook book from server
+
+C:\chef-repo>knife cookbook delete heartbeat
+
+CHEF NODE[Linux]
+---------------------------------------------------------------------------------------------------------
+[root@vme04259-01 ~]# chef-client
+
+
+ [root@vme04259-01 ~]#chef-client -o 'recipe[starter]'
+
+chef-client -o 'recipe[virtualbox]'
