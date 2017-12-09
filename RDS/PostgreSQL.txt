@@ -1,0 +1,17 @@
+#yum install postgresql (To Install PostgreSQL client)
+#psql --host=mydbinstance.cncc8mcjidko.ap-south-1.rds.amazonaws.com --port=5432 --username root --password --dbname=mydb (To Connect to RDS PostgreSQL)
+
+# \l (To list databases)
+
+#\c mydb (To switch to mydb)
+
+#CREATE TABLE COMPANY(
+   ID INT PRIMARY KEY     NOT NULL,
+   NAME           TEXT    NOT NULL,
+   AGE            INT     NOT NULL,
+   ADDRESS        CHAR(50),
+   SALARY         REAL
+);
+
+# \d   (To List Tables)
+# \d company  (To describe table Company)

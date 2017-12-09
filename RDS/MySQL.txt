@@ -1,0 +1,2 @@
+#yum install mysql
+#mysql -h   -u -p -P 

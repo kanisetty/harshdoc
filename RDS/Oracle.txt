@@ -1,0 +1,46 @@
+Preparation (as root)
+
+http://www.oracle.com/technetwork/topics/linuxsoft-082809.html
+
+oracle-instantclient11.2-basic-11.2.0.2.0-1.rpm
+oracle-instantclient11.2-sqlplus-11.2.0.2.0-1.rpm
+Install 
+
+Install RPMs:
+ # rpm -ilv oracle-instantclient11.2-sqlplus-11.2.0.2.0-1.rpm oracle-instantclient11.2-basic-11.2.0.2.0-1.rpm
+Create oracle user, group, ... configure profile:
+ # groupadd -g 500 dba
+ # useradd -u 500 -d /usr/lib/oracle/11.2/client -g "dba" oracle
+ 
+ $ vi ~oracle/.bash_profile
+  export LD_LIBRARY_PATH=/usr/lib/oracle/11.2/client/lib
+  export TNS_ADMIN=/usr/lib/oracle/11.2/client
+  export ORACLE_HOME=/usr/lib/oracle/11.2/client
+
+Test 
+
+Create new /usr/lib/oracle/11.2/client/tnsnames.ora like this:
+
+TEST =
+  (DESCRIPTION =
+    (ADDRESS_LIST =
+        (ADDRESS =
+          (COMMUNITY = tcp.world)
+          (PROTOCOL = TCP)
+          (Host = tst-ora11.xenialab.it)
+          (Port = 1521)
+        )
+    )
+    (CONNECT_DATA = (SID = ORCL)
+    )
+  )
+
+
+Connect to Your database with:
+
+ $ sqlplus scott/tiger1234@TEST
+
+
+You can also use the Easy Connect connection string format (does not use TNSNAMES):
+
+ $ sqlplus scott/tiger1234@tst-ora11.xenialab.it:1521/ORCL
