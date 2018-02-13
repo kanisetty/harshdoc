@@ -1,0 +1,185 @@
+
+#===Environment===========#
+Env: AWS EC2
+Platform: Amazon Linux AMI 2017.09.0 (HVM), SSD Volume Type - ami-4fc58420
+
+#====Install the Docker Engine====#
+[root@localhost~]#  yum install docker
+
+#===To start the service===#
+[root@localhost~]#  service docker start
+
+#====Images=========#
+
+#Pull a base images.
+[root@localhost~]# docker pull ubuntu
+
+#To show all images
+[root@localhost~]#  docker images
+
+#To remove image from local with force
+[root@localhost~]#  docker rmi --force  ubantu
+
+#===Containers=======#
+
+# To create a Container.
+[root@localhost~]# docker run -i -t centos /bin/bash
+
+To show running Containers. With -a option, it shows running and stopped Containers.
+[root@localhost~]# docker ps -a
+
+Force-remove a running container
+# docker rm --force jenkins-master
+
+# To expose an app to public
+[root@ip-172-31-0-128 ~]# docker run -p 8080:8080 --name=kardasz/atlassian-jira  -d kardasz/atlassian-jira
+
+
+docker run -p 8080:8080 --name=docker.io/openjdk  -d docker.io/openjdk
+
+
+#To show image information like IP adress.
+[root@localhost~]# docker inspect srini/hello
+
+To show command history of a image.
+[root@localhost~]# docker history srini/hello
+
+
+[root@localhost~]# sudo docker run -t -i ubuntu /bin/bash
+
+
+
+
+
+#=========Teamcity Container===========# 
+#docker pull jetbrains/teamcity-server
+#docker run -it --name teamcity-server-instance  -v /data/teamcity_server/datadir:/data/teamcity_server/datadir -v  /opt/teamcity/logs:/opt/teamcity/logs    -p 8111:8111   jetbrains/teamcity-server
+
+
+#========Artifactory Container===========#
+#docker pull mattgruter/artifactory
+#docker run -p 8080:8080 mattgruter/artifactory
+
+#========JIRA Container===============#
+#docker pull cptactionhank/atlassian-jira
+#docker create --restart=no --name "jira-container" --publish "8080:8080"  --env "CATALINA_OPTS=-Xms1024m -Xmx1024m -Datlassian.plugins.enable.wait=300"  cptactionhank/atlassian-jira:latest
+
+docker create --restart=no --name "jira-container" --publish "8080:8080"  --env "CATALINA_OPTS=-Xms1024m -Xmx1024m -Datlassian.plugins.enable.wait=300"  jira
+
+#==================DockerFile creation===========================#
+https://github.com/cptactionhank/docker-atlassian-jira
+
+https://github.com/CentOS/CentOS-Dockerfiles/blob/master/nginx/centos6/Dockerfile
+
+Install Git in DockerEngine
+#yum install git
+
+create Directory 
+#mkdir /root/tomcat
+#cd /root/tomcat
+
+clone  Dockerfile from github(This Dockerfile availed in github for tomcat) into /root/tomcat
+#git clone https://github.com/docker-library/tomcat
+
+build the Dockerfile
+#docker build -t my-app  .
+
+run it with container
+#docker run -it --rm -p 8888:8080 tomcat:8.0
+
+
+
+
+
+docker tag httpd:latest 111922932915.dkr.ecr.ap-southeast-1.amazonaws.com/mysite:latest
+
+
+
+
+Access the tomcat server on any browser  with port no 8888
+Note: ensure both 8080 and 8888 ports opened on "Security groups" of Amazon EC2-Instances if Docker Engine is running on AWS Cloud
+
+
+#=================Push Images to Docker Cloud======================#
+
+create Account in Docker cloud with below URL
+https://hub.docker.com
+
+#===create repository===#
+click on "create Reposiry+" and enter the repository name which you want to create
+
+Now login into the docker cloud from Docker Engine
+#docker login
+
+
+#==Tag the image which you have build==#
+syntax: docker tag image username/repository:tag
+ex:       docker tag my-app 100712504021/get-started:Tomcat7.0
+
+#== Publish the image======#
+syntax: docker push username/repository:tag
+ex       : docker push 100712504021/get-started:Tomcat7.0
+
+
+#=========Understanding Swarm clusters================#
+A swarm is a group of machines that are running Docker and joined into a cluster. 
+After that has happened, you continue to run the Docker commands you’re used to, but now they are executed on a cluster by a swarm manager. 
+The machines in a swarm can be physical or virtual. After joining a swarm, they are referred to as nodes.
+
+To Enable swarn Mode
+#docker swarm init
+
+#========How to setup local Docker Registry============#
+ #yum install docker-registry
+#vi /usr/lib/systemd/system/docker.service
+##Add below two lines at ExecStart section
+ExecStart=/usr/bin/dockerd-current --insecure-registry 10.96.85.6:5000 \
+          --insecure-registry 10.96.85.127:8081 \
+          --add-runtime docker-runc=/usr/libexec/docker/docker-runc-current \
+
+
+#======To make it Effect plz run below command========#
+
+#systemctl daemon-reload
+
+FEW URL FOR DOCKER 
+
+https://deis.com/blog/2016/connecting-docker-containers-1/
+http://www.ybrikman.com/writing/2015/11/11/running-docker-aws-ground-up/
+http://www.itzgeek.com/how-tos/linux/how-to-build-docker-images-with-dockerfile.html
+http://www.slashroot.in/docker-network-configuration-tutorial
+https://coreos.com/os/docs/latest/getting-started-with-docker.html
+
+
+
+docker run -d -p 3306:3306 mysql
+
+=====YouTube=========
+Configuring Nginx as a reverse proxy for Apache
+[Webinar] Getting Started with Docker and JFrog Artifactory Pro
+Artifactory Docker Integration Webinar
+Setup Private Docker Registry: Secure w/ SSL & password. Episode #2
+https://www.itzgeek.com/how-tos/linux/centos-how-tos/how-to-setup-docker-private-registry-on-centos-7-ubuntu-16-04.html
+
+=====Artifactory Pro setup with DockerCompose======
+step1) Install Docker
+#yum install docker
+
+step2) Install docker compose
+
+#sudo yum install epel-release && sudo yum install -y python-pip
+#sudo pip install docker-compose 
+#sudo yum upgrade python* -y
+
+step3)install artifactory pro with below command
+
+#curl -L 'https://bintray.com/api/v1/content/jfrog/run/art-compose/$latest/art-compose?bt_package=art-compose' | sudo bash
+Access Artifactory with Docker ip/artifactory(Ex: http://10.96.85.6/artifactory)
+
+
+#docker run -d --name artifactory-old -p 80:80 -p 443:443 -p 5000-5002:5000-5002 jfrog-docker-registry.bintray.io/jfrog/artifactory-registry:latest
+
+http://centos7x64.lab.opentext.com:80
+
+docker tag docker.io/registry 10.96.45.109:5001/docker.io/registry:latest
+docker push 10.96.45.109:5001/docker.io/registry:latest

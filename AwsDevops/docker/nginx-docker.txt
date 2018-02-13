@@ -1,0 +1,186 @@
+#################################
+#          Docker Client                            #
+#################################
+
+#======To install Docker#======
+#yum install docker
+
+#======Add insecure port numbers#======
+# vi /usr/lib/systemd/system/docker.service
+
+ExecStart=/usr/bin/dockerd-current --insecure-registry 10.96.45.109:5001 \
+
+#======To make it Effect plz run below command========#
+#systemctl daemon-reload
+
+#service docker restart
+
+
+
+################################
+#                 Artifactory                       #
+################################
+
+Server Details
+Artifactory Version 5.7.1 (Uptime is 0d 20h 59m 0s)
+
+Installation method with Docker:
+#docker pull docker.bintray.io/jfrog/artifactory-pro:5.7.1
+#docker run --name artifactory -d -p 8081:8081 docker.bintray.io/jfrog/artifactory-pro:5.7.1
+
+Generate Trial Licence and Activate
+
+Create local Repository
+
+-click on "Welcome,admin"->local repository->"Select Package Type"(Docker)
+Enter Repository Key as "docker-dev"
+
+-click on Advanced tab
+Under Reverse Proxy, Enter Registry port as 5001
+
+Generating Reverse Proxy configuration File
+
+-click on "Admin icon" ->Reverse Proxy  and enter below details
+
+under Reverse Proxy Settings pick below from drop down
+
+Server Provider *
+NGING nginx
+
+Internal Hostname *             Internal Port *
+ 
+10.96.45.109                          8081
+
+Internal Context Path 
+artifactory
+
+Public Server Name *       Public Context Path
+ 10.96.45.109                   artifactory
+
+check the Box Use HTTP
+HTTO Port *
+
+80      
+
+
+Docker Reverse Proxy Settings
+Reverse Proxy Method
+Port
+
+
+Fill the Details and click on Save This file should be given to nginx to run proxy
+
+                
+##########################
+#              Nginx                      #
+##########################
+
+#yum install nginx
+
+#This must be done to allow port numbers
+#setenforce 0  
+
+
+#vi /etc/nginx/nginx.conf
+
+# For more information on configuration, see:
+#   * Official English Documentation: http://nginx.org/en/docs/
+#   * Official Russian Documentation: http://nginx.org/ru/docs/
+
+user nginx;
+worker_processes auto;
+error_log /var/log/nginx/error.log;
+pid /run/nginx.pid;
+
+# Load dynamic modules. See /usr/share/nginx/README.dynamic.
+include /usr/share/nginx/modules/*.conf;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile            on;
+    tcp_nopush          on;
+    tcp_nodelay         on;
+    keepalive_timeout   65;
+    types_hash_max_size 2048;
+
+    include             /etc/nginx/mime.types;
+    default_type        application/octet-stream;
+
+    # Load modular configuration files from the /etc/nginx/conf.d directory.
+    # See http://nginx.org/en/docs/ngx_core_module.html#include
+    # for more information.
+    include /etc/nginx/conf.d/*.conf;
+
+## server configuration
+server {
+
+    listen 80 ;
+
+    server_name 10.96.45.109;
+    if ($http_x_forwarded_proto = '') {
+        set $http_x_forwarded_proto  $scheme;
+    }
+    ## Application specific logs
+    ## access_log /var/log/nginx/10.96.45.109-access.log timing;
+    ## error_log /var/log/nginx/10.96.45.109-error.log;
+    rewrite ^/$ /artifactory/webapp/ redirect;
+    rewrite ^/artifactory/?(/webapp)?$ /artifactory/webapp/ redirect;
+    chunked_transfer_encoding on;
+    client_max_body_size 0;
+    location /artifactory/ {
+    proxy_read_timeout  900;
+    proxy_pass_header   Server;
+    proxy_cookie_path   ~*^/.* /;
+    if ( $request_uri ~ ^/artifactory/(.*)$ ) {
+        proxy_pass          http://10.96.45.109:8081/artifactory/$1;
+    }
+    proxy_pass          http://10.96.45.109:8081/artifactory/;
+    proxy_set_header    X-Artifactory-Override-Base-Url $http_x_forwarded_proto://$host:$server_port/artifactory;
+    proxy_set_header    X-Forwarded-Port  $server_port;
+    proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
+    proxy_set_header    Host              $http_host;
+    proxy_set_header    X-Forwarded-For   $proxy_add_x_forwarded_for;
+    }
+}
+
+## server configuration
+server {
+    listen 5001;
+
+
+    server_name 10.96.45.109;
+    if ($http_x_forwarded_proto = '') {
+        set $http_x_forwarded_proto  $scheme;
+    }
+    ## Application specific logs
+    ## access_log /var/log/nginx/10.96.45.109-access.log timing;
+    ## error_log /var/log/nginx/10.96.45.109-error.log;
+    rewrite ^/(v1|v2)/(.*) /artifactory/api/docker/docker-dev/$1/$2;
+    chunked_transfer_encoding on;
+    client_max_body_size 0;
+    location /artifactory/ {
+    proxy_read_timeout  900;
+    proxy_pass_header   Server;
+    proxy_cookie_path   ~*^/.* /;
+    proxy_pass          http://10.96.45.109:8081/artifactory/;
+    proxy_set_header    X-Artifactory-Override-Base-Url $http_x_forwarded_proto://$host:$server_port/artifactory;
+    proxy_set_header    X-Forwarded-Port  $server_port;
+    proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
+    proxy_set_header    Host              $http_host;
+    proxy_set_header    X-Forwarded-For   $proxy_add_x_forwarded_for;
+    }
+}
+
+
+}
+
+#service nginx restart
